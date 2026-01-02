@@ -26,7 +26,7 @@ export async function saveDechetLocal(data) {
     const id = await db.add(STORE, data);
     return id;
 }
-//Récupère tout (liste d'objets)
+//Récupère tout -> (liste d'objets)
 export async function getAllDechetPending() {
     const db = await getDB();
     return db.getAll(STORE);
@@ -39,13 +39,13 @@ export async function deletePending(id) {
 }
 
 //recupre un item de la db
-// export async function updateDechet(item) {
-//     const db = await getDB()
-//     return db.put('formulaire', item)
-// }
+export async function updateDechet(item) {
+    const db = await getDB()
+    return db.put('formulaire', item)
+}
 
 
-// Vide tout (utile pour debug)
+// Vide tout !
 export async function clearPending() {
     const db = await getDB();
     return db.clear(STORE);

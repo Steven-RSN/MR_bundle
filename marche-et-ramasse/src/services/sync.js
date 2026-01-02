@@ -1,72 +1,49 @@
+// getAllDechetPending() → récupère tous les déchets stockés localement et pas encore synchronisés
+// deletePending(id) → supprime un déchet local après qu'il ait été envoyé au backend
 import { getAllDechetPending, deletePending } from './db';
 
-
-
-// petit helper pour tester la connectivité réelle (navigator.onLine n'est pas opti)
-async function pingServer() {
-  // try {
-  //   const res = await fetch('http://localhost:3000/ping', { method: 'GET', cache: 'no-store' });
-  //   return res.ok;
-  // } catch (e) {
-  //   return false;
-  // }
-}
-
+// Fonction pour envoyer un élément au back
 async function sendItemToServer(item) {
-  // envoie via fetch (ton backend doit accepter le JSON avec images base64)
   const res = await fetch('http://localhost:3000/dechets', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(item)
+    method: 'POST', 
+    headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify(item) 
   });
+  // vérifie si le backend et ok
   if (!res.ok) {
+    // récupère l'erreur
     const text = await res.text().catch(() => null);
     throw new Error(`Server responded ${res.status} ${text || ''}`);
   }
+  //Lit la réponse JSON et on la retourne
   const data = await res.json();
   return data;
 }
 
+// Fonction  qui synchronise tous les déchets avec le backend
 export async function syncPending() {
-  // vérifier que le serveur est joignable
-  const online = navigator.onLine //&& await pingServer();
-  if (!online) return { ok: false, reason: 'offline' };
+  // Vérifie si l'utilisateur est en ligne
+  const online = navigator.onLine 
+  if (!online) return { ok: false, reason: 'offline' }; //Si hors ligne on sort
 
+  // Récupère tous les déchets stockés localement et en attente de sync
   const pending = await getAllDechetPending();
-  if (!pending || pending.length === 0) return { ok: true, synced: 0 };
-
+  
+  if (!pending || pending.length === 0) return { ok: true, synced: 0 }// Si rien n'est à synchroniser
   let synced = 0;
+
+  // Boucle sur les déchets
   for (const item of pending) {
     try {
+      // Envoi le dechet au backend
       await sendItemToServer(item);
-      await deletePending(item.id); // supprime local si réussi
+      // Supprime de la DB locale
+      await deletePending(item.id); 
+
       synced++;
     } catch (err) {
       console.error('Échec de sync item id', item.id, err);
-      // ne pas throw : on continue pour les autres !!
     }
   }
-
   return { ok: true, synced };
 }
-
-
-
-
-
-// export async function syncWithServer() {
-//     const allData = await getDechets()
-//     const unsynced = allData.filter(d => !d.sync)
-
-//     for (const item of unsynced) {
-//         try {
-//             const response = await sendDechetToServer(item)
-//             if (response.ok) {
-//                 item.sync = true
-//                 await updateDechet(item)
-//             }
-//         } catch (e) {
-//             console.error('Erreur de synchro :', e)
-//         }
-//     }
-// }

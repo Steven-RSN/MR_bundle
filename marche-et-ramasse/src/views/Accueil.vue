@@ -43,8 +43,6 @@
 
             </div>
 
-
-
         </div>
     </div>
 </template>
@@ -69,6 +67,8 @@ onMounted(async () => {
         const response = await getAllDechets();
         console.log('donnees  backend:', dechets);
         dechets.value = response
+        console.log('donnees  backend2:', dechets);
+
     } catch (err) {
         console.error('Erreur lors de la récupération des déchets:', err);
     }
