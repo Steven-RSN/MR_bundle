@@ -1,0 +1,16 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Build and Test') {
+      steps {
+        script {
+          docker.image('node:20-alpine').inside {
+            sh 'npm ci'
+            sh 'npm test'
+          }
+        }
+      }
+    }
+  }
+} 
