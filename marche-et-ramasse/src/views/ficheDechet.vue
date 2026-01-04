@@ -23,9 +23,12 @@
                             </div>
 
                         </div>
-                        <div @click="saveToClean(dechet.id)" class="border cursor-pointer transition rounded-lg p-1.5"
-                            :class="userStore.isToClean(dechet.id) ? 'bg-customGreen border-0 p-2' : 'bg-gray-100'">
-                            <img src="/public/icons/autres/icons8-drapeau-100 3.png" alt="Drapeau">
+                        <div @click="saveToClean(dechet.id)" class="border flex justify-between  items-center cursor-pointer transition rounded-lg"
+                    
+                            :class="userStore.isToClean(dechet.id) ? 'bg-customGreen border-0 p-2' : 'bg-gray-200  border-2 border-gray-300 p-1.5'">
+                               <p class="ml-1 mr-1.5">Je ramasse</p>
+                               
+                            <img src="/public/icons/autres/icons8-drapeau-100 3.png" class="mr-1" alt="Drapeau">
                         </div>
 
                     </div>
@@ -107,7 +110,8 @@ onMounted(async () => {
 })
 
 function saveToClean(dechetID) {
-  userStore.setClean(dechetID)
+  userStore.toggleClean(dechetID)
+  console.log('Déchets à nettoyer:', userStore.dechetsSaved)
 }
 
 </script>

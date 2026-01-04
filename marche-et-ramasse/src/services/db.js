@@ -3,12 +3,10 @@ import { openDB } from "idb";
 const DB_NAME = 'MarcheEtRamasseDB';
 const DB_VERSION = 1;
 const STORE = 'dechets_pending';
-
 let dbPromise = null;
 
 export function getDB() {
     if (!dbPromise) {
-
         dbPromise = openDB(DB_NAME, DB_VERSION, {
             upgrade(db) {
                 if (!db.objectStoreNames.contains(STORE)) {
@@ -19,7 +17,7 @@ export function getDB() {
     }
     return dbPromise;
 }
-
+//CRUD:
 //ajout des données du formulaire a la db
 export async function saveDechetLocal(data) {
     const db = await getDB()
@@ -41,7 +39,7 @@ export async function deletePending(id) {
 //recupre un item de la db
 export async function updateDechet(item) {
     const db = await getDB()
-    return db.put('formulaire', item)
+    return db.put(STORE, item)
 }
 
 

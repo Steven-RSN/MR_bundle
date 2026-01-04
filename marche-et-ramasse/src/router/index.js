@@ -34,12 +34,17 @@ const router = createRouter({
       component: () => import('../views/Connexion.vue')
     },
     {
-      path:'/profil',
-      component:()=> import('../views/profil.vue')
+      path: '/profil',
+      component: () => import('../views/profil.vue')
     },
     {
-      path:'/cgu',
-      component:()=>import('../views/cgu.vue')
+      path: '/cgu',
+      component: () => import('../views/cgu.vue')
+    },
+    {
+      path: '/local-dechets',
+      component:()=>import('../views/LocalDechets.vue'),
+      meta: { requiresAuth: true } 
     },
   ]
 })

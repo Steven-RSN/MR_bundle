@@ -6,20 +6,35 @@
   color: #3f3e3eff;
 }
 
-.border-1-customGreen{
-    border-bottom:2px solid;
-    border-color:#B9CAAAAA;
+.border-1-customGreen {
+  border-bottom: 2px solid;
+  border-color: #b9caaac4;
 }
-.b-customGreen{
-    border-color:#B9CAAA;
+
+.bb-customGreen {
+  border-bottom: 1px solid;
+  border-color: #748a61ab;
 }
-.b-2-customGreen{
+
+.b-customGreen {
+  border-color: #B9CAAA;
+}
+
+.b-2-customGreen {
   border-color: #9ac276ff;
 }
-.b-3-customGreen{
+
+.b-3-customGreen {
   border-color: #dcebceff;
 }
+
+.bg-beigeCustome {
+  background-color: #ECDDBD;
+}
+
 .label-s {
-  font-weight: 400 !important;  /* équivalent font-light */
-  color: #131314ff;    /* équivalent Tailwind text-gray-600 */
+  font-weight: 400 !important;
+  /* équivalent font-light */
+  color: #131314ff;
+  /* équivalent Tailwind text-gray-600 */
 }

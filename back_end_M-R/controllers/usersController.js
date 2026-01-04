@@ -66,14 +66,15 @@ exports.login = async (req, res) => {
             // utilisateur existe déjà
             return res.status(409).json({ success: false, message: 'Compte non trouvé' });
         }
-
+        console.log('password:', password);
+        console.log('hash:', user.userPassword);
         // Vérification du mot de passe !!!!!
-        const verifyPassword = await bcrypt.compare(password, user.password_hash);
+        const verifyPassword = await bcrypt.compare(password, user.userPassword);
 
         if (!verifyPassword) {
             return res.status(401).json({ success: false, message: 'Mot de passe incorrect' });
         }
-        delete user.password_hash
+        delete user.userPassword
         console.log('user sans password', user);
         const accessToken = generateAccessToken(user);
         console.log('accessToken', accessToken);
@@ -84,8 +85,8 @@ exports.login = async (req, res) => {
             message: 'Connexion réussie',
             user: {
                 id: user.id_user,
-                pseudo: user.pseudo,
-                email: user.email,
+                pseudo: user.userPseudo,
+                email: user.userEmail,
                 token: accessToken,
             }
         });

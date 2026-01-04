@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-customGreen px-3 py-1.5 shadow-md">
+  <nav class="bg-customGreen px-3 py-1.5 shadow-md bb-customGreen">
     <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between ">
       <!-- Logo ou titre -->
       <router-link to="/" class=" items-center text-lg font-semibold text-gray-900">
@@ -23,18 +23,23 @@
           <router-link to="/formulaire"
             class="block md:inline-block text-gray-900 hover:underline px-2 py-1">Formulaire</router-link>
           <router-link to="/cgu" class="block md:inline-block text-gray-900 hover:underline px-2 py-1">CGU</router-link>
-
+          <!-- Lien vers la page des déchets locaux -->
+          <template v-if="isLogged">
+            <router-link to="/local-dechets" class="block md:inline-block text-gray-900 hover:underline px-2 py-1">
+              Déchets locaux
+            </router-link>
+          </template>
           <template v-if="isLogged">
             <router-link to="/profil"
               class="block md:inline-block text-gray-900 hover:underline px-2 py-1">Profil</router-link>
             <span class="text-gray-900 font-semibold px-2 py-1">
-              Yo {{ userStore.pseudo }}
+              Yo  {{ pseudo }}
             </span>
             <button @click="logout"
               class="bg-green-500  block md:inline-block  px-3 py-1 rounded-lg transition">Déco</button>
 
           </template>
-          
+
 
           <!-- -(non connecté)- -->
           <template v-else>
@@ -55,13 +60,16 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
+import { storeToRefs } from 'pinia'
 
-const userStore = useUserStore()
 const router = useRouter()
-
-const isLogged = computed(() => Boolean(userStore.email)) //pas sécur ? 
-console.log(userStore)
+const userStore = useUserStore()
+const { pseudo, token } = storeToRefs(userStore) 
+const isLogged = computed(() => !!token.value) // true si connecté!!
 const open = ref(false)
+console.log('Pseudo nav:', pseudo.value)
+console.log('Token nav:', token.value)
+console.log('isLogged:', isLogged.value)
 function logout() {
   userStore.logout()
   router.push({ name: 'Accueil' })

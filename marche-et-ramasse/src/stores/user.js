@@ -9,11 +9,9 @@ export const useUserStore = defineStore('user', {
         toClean: [],
     }),
     getters: {
-        isToClean: function (state) {
-            return function (dechetId) {
-                return state.toClean.includes(dechetId)
-            }
-        }
+        isToClean: (state) => (dechetId) => state.toClean.includes(dechetId),//temp ?
+
+        dechetsSaved: (state) => state.toClean
     },
 
     actions: {
@@ -23,13 +21,20 @@ export const useUserStore = defineStore('user', {
             this.email = email || null
             this.token = token || null
         },
-        setClean(toCleanId) {
+        toggleClean(dechetId) {
+            const index = this.toClean.indexOf(dechetId)
+            if (index === -1) {
+                this.toClean.push(dechetId) // ajouter
+            } else {
+                this.toClean.splice(index, 1) // retirer
+            }
+        },
 
+        setClean(toCleanId) {
             if (!this.toClean.includes(toCleanId)) {
                 this.toClean.push(toCleanId)
             }
-        }
-        ,
+        },
         logout() {
             this.id = null
             this.pseudo = null

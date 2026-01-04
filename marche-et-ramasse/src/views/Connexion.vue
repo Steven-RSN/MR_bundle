@@ -27,7 +27,7 @@
 
                     <img src="/icons/autres/icons8-password-100.png" class="w-8" alt="">
                     <label class="label-s" for="poids">Password :</label>
-                    <input class="flex-1 text-right focus:outline-none" id="poids" type="password" v-model="password"
+                    <input class="flex-1 text-right focus:outline-none" id="password" type="password" v-model="password"
                         required />
                 </div>
                 <p v-if="error.password" class="text-red-600 text-sm ml-2">{{ error.password }}</p>
@@ -54,17 +54,16 @@ import { useUserStore } from '../stores/user'
 const router = useRouter()
 const userStore = useUserStore()
 
-const pseudo = ref('')
+//const pseudo = ref('')
 const email = ref('')
 const password = ref('')
-
-defineExpose({ valideData, error });
-
 
 let error = ref({
     "email": '',
     "password": '',
 })
+defineExpose({ valideData, error });
+
 
 let logForm = ref({
     "email": '',
@@ -97,7 +96,7 @@ async function submitForm() {
             console.log('Utilisateur stocké dans Pinia:', userStore)
             console.log('Utilisateur id:', userStore.id)
             console.log('Utilisateur token:', userStore.token,)
-
+            console.log("Utilisateur pseduo : ", userStore.pseudo)
             router.push({
                 name: 'Accueil',
                 params:''

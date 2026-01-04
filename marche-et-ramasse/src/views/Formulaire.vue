@@ -1,9 +1,8 @@
 <template>
-  <div class="flex justify-center mt-10 ">
+  <div class="flex justify-center">
     <fieldset class=" bg-base-200 border-base-300 shadow-xl rounded-box mx-auto border p-2 ">
-      <h1 class="tracking-wide text-center text-3xl m-4 border-b-2 border-t-2 rounded-lg b-customGreen p-4 ">
-        Signaler
-        un déchet
+      <h1 class="tracking-wide text-center text-2xl m-4 border-b-2 border-t-2 rounded-lg b-customGreen p-4 ">
+        Signaler un déchet
       </h1>
 
       <form @submit.prevent="enregistrer">
@@ -149,43 +148,15 @@ const errors = ref({});
 onMounted(() => {
   // si l'écran est inférieur a 768px, on considère comme mobile !
   useCamera.value = window.innerWidth < 768
-})
 
-//Convertion en base 64 pour envoyer en back end
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = () => resolve(reader.result)
-    reader.onerror = err => reject(err)
-  })
-}
+});
 
-
+// Ouvrel'appareil photo
 function handleImageClick() {
-
-  if (useCamera.value && navigator.geolocation) {
-    // récupérer la géoloc avant d’ouvrir l’input (sur mobile)
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        gps.value.latitude = position.coords.latitude
-        gps.value.longitude = position.coords.longitude
-        console.log("Position récupérée :", gps.value)
-        fileInput.value.click() // ouvrir le l'apparaeil photo après géoloc
-      },
-      (err) => {
-        console.warn("Géolocalisation non autorisée ou erreur", err)
-      },
-      { timeout: 5000 }
-    )
-  } else {
-    // Sur desktop
-    console.log('Desktop, ouverture input fichiers')
-    fileInput.value.click()
-  }
+  fileInput.value.click();
 }
 
-// handleFiles pour gérer les fichiers sélectionnés
+// handleFiles pour gérer les img
 async function handleFiles(event) {
   const files = Array.from(event.target.files)
   console.log('Fichiers sélectionnés:', files)
@@ -206,8 +177,32 @@ async function handleFiles(event) {
     }
     images.value.push(file);
   }
-  console.log("IMAGES taille", images.value.length)
-  console.log("IMAGES 0", images.value[0])
+  if (!gps.value.latitude || !gps.value.longitude) {
+    checkGelocaltion();
+  }
+}
+
+
+function checkGelocaltion() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        gps.value.latitude = pos.coords.latitude;
+        gps.value.longitude = pos.coords.longitude;
+      },
+      (err) => {
+        console.warn("Géoloc impossible:", err);
+        gps.value.latitude = null;
+        gps.value.longitude = null;
+        message.value = "Activez la géolocalisation pour pouvoir signaler un déchet.";
+        messageType.value = "error";
+      },
+      { enableHighAccuracy: true }
+    );
+  } else {
+    message.value = "La géolocalisation n'est pas disponible .";
+    messageType.value = "error";
+  }
 }
 
 // Fonction qui génère l'URL
@@ -234,68 +229,83 @@ function convert64(files) {
 }
 // Fonction pour ajouter des images
 async function enregistrer() {
-  let imgConvert = []
-  imgConvert = await convert64(images.value)
-  console.log("après conversion", imgConvert)
+  if (!gps.value.latitude || !gps.value.longitude) {
+    message.value = "Impossible d'envoyer le signalement sans géolocalisation.";
+    messageType.value = "error";
+    return;
+  }
+  if (!userStore.id) {
+    message.value = 'Vous devez être connecté pour poster un signalement.'
+    messageType.value = 'error'
+    return
+  }
   console.log('iduser', userStore.id)
+
+  //Préparation des données
+  let imgConvert = []
+  try {
+    imgConvert = await convert64(images.value)
+    console.log("après conversion", imgConvert)
+
+  } catch (err) {
+    console.error('Erreur conversion images:', err)
+    message.value = 'Erreur lors du traitement des images.'
+    messageType.value = 'error'
+    return
+  }
+
   const data = {
-    idUser: userStore.id,
-    images: [...imgConvert],
-    type_dechet: type.value.trim(),
+    id_user: userStore.id,
+    type_dechet: type.value,
     volume_litres: volume.value,
     poids_kg: poids.value,
     lieu: lieu.value.trim(),
     commentaire: commentaire.value.trim(),
     latitude: gps.value.latitude,
     longitude: gps.value.longitude,
-    date: new Date().toISOString()
-  }
-
+    images: [...imgConvert]
+  };
   if (!validerData(data)) { return }
+  
+  //tentative d'envoi au backend
+  try {
+    if (!navigator.onLine) { throw new Error('offline') }
 
-  console.log("-> Validation réussie, enregistrement en cours...")
+    const res = await sendDechetToServer(data)
+    if (res?.success) {
+      message.value = 'Les données ont été enregistrées !'
+      messageType.value = 'success'
+      resetForm()
+      return
+    }
+    // probleme backend
+    throw new Error('backend-error')
 
-  if (!navigator.onLine) { //a modifier
+  } catch (e) {
+    // si pas connecté, pas de sauvegarde locale
+    if (e?.status === 401) {
+      message.value = 'Vous devez être connecté pour poster une alerte.'
+      messageType.value = 'error'
+      return
+    }
     try {
-      //--- hors ligne -> sauvegarde locale ----
+      //sauvegarde locale
       console.log('Hors ligne, sauvegarde locale...')
-      await saveDechetLocal(data);
+      const id = await saveDechetLocal(data);
       console.log('Enregistré localement avec id:', id)
-      message.value = 'Hors ligne — enregistré localement.';
+      console.log('dechet :', data)
+      message.value = 'Hors ligne ou serveur indisponible — enregistré localement.'
       messageType.value = 'error';
 
     } catch (e) {
-      console.error('erreur saveDechetLocal:', e)
+      console.error('Erreur IndexedDB:', e)
       message.value = 'Erreur lors de la sauvegarde locale.'
       messageType.value = 'error'
     }
-    return
-  }
 
-  try {
-    console.log('envoi au server')
-    const res = await sendDechetToServer(data)
-    console.log(res)
-
-    if (res.success) {
-      console.log('ok')
-      message.value = 'Les données ont été enregistrées !';
-      messageType.value = 'success';
-      resetForm();
-      return
-    }
-
-  } catch (e) {
-    if (e.status = 401) {
-      message.value = 'Vous devez etre connecter pour poster une alerte.'
-
-    } else {
-      console.error("Error saving data:", e)
-      message.value = 'Une erreur est survenue lors de l\'enregistrement.'
-      messageType.value = 'error'
-    }
   }
 }
+
 
 function validerData(data) {
   errors.value = {} // Reset erreurs
@@ -350,12 +360,12 @@ function redirect() {
 }
 
 
-
+/*
 // Ajout des images via drag and drop
 function handleDrop(event) {
   addFiles(Array.from(event.dataTransfer.files))
 }
-
+*/
 </script>
 
 
@@ -388,3 +398,31 @@ button:hover {
   background-color: #fce6ba;
 }
 </style>
+
+/*
+async function checkGeolocationt() {
+if (!navigator.geolocation) {
+message.value = "La géolocalisation n'est pas disponible sur votre appareil.";
+messageType.value = "error";
+return false;
+}
+return new Promise((resolve) => {
+navigator.geolocation.getCurrentPosition(
+(position) => {
+gps.value.latitude = position.coords.latitude;
+gps.value.longitude = position.coords.longitude;
+resolve(true);
+},
+(err) => {
+console.log("Géolocalisation non autorisée/erreur", err);
+message.value = "Pour signaler un déchet, veuillez activer la géolocalisation.";
+messageType.value = "error";
+gps.value.latitude = null;
+gps.value.longitude = null;
+resolve(false);
+},
+{ enableHighAccuracy: true }
+);
+});
+}
+*/

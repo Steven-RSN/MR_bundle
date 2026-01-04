@@ -12,6 +12,7 @@ export default defineConfig({
     mkcert(),
     VitePWA({
       registerType: 'autoUpdate',
+      strategies: 'generateSW', // service worker généré automatiquement
       manifest: {
         name: 'Marche et Ramasse',
         short_name: 'MarcheRamasse',
@@ -23,6 +24,19 @@ export default defineConfig({
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
         ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,png,svg}'], // précharge tous les fichiers
+        runtimeCaching: [
+          {
+            urlPattern: /\/.*/,       // toutes les routes de ton app
+            handler: 'NetworkFirst',   // essaie réseau sinon cache
+            options: {
+              cacheName: 'pages-cache',
+              expiration: { maxEntries: 50, maxAgeSeconds: 7 * 24 * 60 * 60 }, // 7 jours
+            },
+          },
+        ],
       }
     })
   ],
