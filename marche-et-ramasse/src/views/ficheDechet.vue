@@ -23,11 +23,11 @@
                             </div>
 
                         </div>
-                        <div @click="saveToClean(dechet.id)" class="border flex justify-between  items-center cursor-pointer transition rounded-lg"
-                    
+                        <div @click="saveToClean(dechet.id)"
+                            class="border flex justify-between  items-center cursor-pointer transition rounded-lg"
                             :class="userStore.isToClean(dechet.id) ? 'bg-customGreen border-0 p-2' : 'bg-gray-200  border-2 border-gray-300 p-1.5'">
-                               <p class="ml-1 mr-1.5">Je ramasse</p>
-                               
+                            <p class="ml-1 mr-1.5">Je ramasse</p>
+
                             <img src="/public/icons/autres/icons8-drapeau-100 3.png" class="mr-1" alt="Drapeau">
                         </div>
 
@@ -70,15 +70,17 @@
 
 import { ref, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-import { getDechetAndUserByIdDechet } from '../services/api'
+import { getDechetAndUserByIdDechet,getCleaningStatus  } from '../services/api'
 import L from "leaflet"
 import 'leaflet/dist/leaflet.css'
+import { startCleaning, cancelCleaning } from '../services/api'
 import { truncateText, toUp } from '../tools/utils'
 import { useUserStore } from '../stores/user'
 const maps = ref({})
 const route = useRoute()
 const dechet = ref(null)
 const userStore = useUserStore()
+const isCleaning = ref(false);
 
 onMounted(async () => {
 
@@ -88,6 +90,16 @@ onMounted(async () => {
         console.log(dechet.value)
 
         await nextTick()
+        // Récupére l'état !
+        if (navigator.onLine) {
+            try {
+                const res = await getCleaningStatus(id);
+                isCleaning.value = res.isCleaning;
+                console.log('log',isCleaning)
+            } catch (err) {
+                console.error('Impossible de récupérer l’état de ramassage', err);
+            }
+        }
 
         let zoomLevel = 12
         const map = L.map('map').setView([dechet.value.latitude, dechet.value.longitude], zoomLevel);
@@ -109,10 +121,36 @@ onMounted(async () => {
 
 })
 
-function saveToClean(dechetID) {
-  userStore.toggleClean(dechetID)
-  console.log('Déchets à nettoyer:', userStore.dechetsSaved)
+async function saveToClean(dechetID) {
+    if (!userStore.token) {
+        console.log('Utilisateur non connecté');
+        return;
+    }
+
+    if (!navigator.onLine) {
+        console.log('Hors ligne, sauvegarde locale...');
+        userStore.toggleClean(dechetID)
+        return;
+    }
+
+    try {
+        if (userStore.isToClean(dechetID)) {
+            await cancelCleaning(dechetID);
+        } else {
+            await startCleaning(dechetID);
+        }
+
+        userStore.toggleClean(dechetID);
+
+    } catch (err) {
+        if (err?.response?.status === 401) {
+            console.log('token invalide !');
+            return;
+        }
+        console.error('Erreur backend :', err);
+    }
 }
+
 
 </script>
 

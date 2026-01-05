@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 
 exports.ajoutDechet = async (req, res) => {
-    try { 
+    try {
         // Nettoyer toutes les données
         const cleanData = {};
         for (const key in req.body) {
@@ -17,7 +17,7 @@ exports.ajoutDechet = async (req, res) => {
             }
         }
         const images = cleanData.images;
-        
+
         //gestion data manquante
         const missing = [];
         for (const key in cleanData) {
@@ -26,7 +26,7 @@ exports.ajoutDechet = async (req, res) => {
                 cleanData[key] === undefined ||
                 (typeof cleanData[key] === 'string' && cleanData[key].length === 0) ||
                 (Array.isArray(cleanData[key]) && cleanData[key].length === 0)
-            ){ missing.push(key);}
+            ) { missing.push(key); }
         }
         if (missing.length > 0) {
             return res.status(400).json({
@@ -87,8 +87,8 @@ exports.getAllDechet = async (req, res) => {
                 };
             }
             // Si pas d'image, passe au suivant
-            if (!row.path) {continue;}
-            
+            if (!row.path) { continue; }
+
             try {
                 const fullPath = path.join(__dirname, '..', row.path);
 
@@ -141,12 +141,53 @@ exports.getDechetAndUserByIdDechet = async (req, res) => {
         dechet.images.push(`data:image/${ext};base64,${base64}`);
         //   console.log(dechet)
         res.json(dechet);
-    } catch (err) {
+    } catch (e) {
 
-        console.error(err);
-        res.status(500).json({ error: 'Erreur serveur' });
+        console.error(e);
+        res.status(500).json({ e: 'Erreur serveur' });
     }
 }
+
+exports.getCleaningStatus = async (req, res) => {
+    const id_alertWaste = req.params.id;
+
+    try {
+        const [rows] = await dechetsModel.getCleaningStatus(id_alertWaste);
+        res.json({ isCleaning: rows.length > 0 });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+}
+
+exports.startCleaning = async (req, res) => {
+    const id_user = req.user.user.id_user;
+    const id_alertWaste = req.params.id;
+
+    try {
+        await dechetsModel.startCleaning(id_user, id_alertWaste);
+        res.json({ success: true });
+    } catch (e) {
+        if (e.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: 'Déjà engagé' });
+        }
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+};
+
+exports.cancelCleaning = async (req, res) => {
+    const id_user = req.user.user.id_user;
+    const id_alertWaste = req.params.id;
+
+    try {
+        await dechetsModel.cancelCleaning(id_user, id_alertWaste);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+};
+
+
 function sanitize(data) {
     if (typeof data !== 'string') return data;
 

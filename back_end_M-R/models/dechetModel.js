@@ -187,18 +187,32 @@ exports.findDechetAndUserById = async (id) => {
         [id]
     );
     return rows[0];
+
 }
 
+exports.getCleaningStatus = (id_alertWaste) => {
+    return db.execute(
+        `SELECT 1 FROM clear WHERE id_alertWaste = ? LIMIT 1`,
+        [id_alertWaste]
+    );
+};
 
 
+exports.startCleaning = (id_user, id_alertWaste) => {
+    return db.execute(
+        `INSERT INTO clear (id_user, id_alertWaste, is_cleared)
+         VALUES (?, ?, 0)`,
+        [id_user, id_alertWaste]
+    );
+};
 
-
-
-
-
-
-
-
+exports.cancelCleaning = (id_user, id_alertWaste) => {
+    return db.execute(
+        `DELETE FROM clear
+         WHERE id_user = ? AND id_alertWaste = ?`,
+        [id_user, id_alertWaste]
+    );
+};
 
 
 

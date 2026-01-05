@@ -47,7 +47,7 @@ export async function login(user) {
 
 }
 
-export async function getAllDechets() { 
+export async function getAllDechets() {
   const response = await axios.get(`${API_URL}/`);
   return response.data
 }
@@ -60,4 +60,23 @@ export async function getDechetAndUserByIdDechet(id) {
 export async function getProfilUserById(id) {
   const res = await axios.get(`${API_URL}/users/profil/${id}`)
   return res.data
+}
+
+export async function getCleaningStatus(dechetId) {
+  const res = await axios.get(`${API_URL}/dechets/${dechetId}/clean/status`);
+  return res.data;
+}
+
+export async function startCleaning(dechetId) {
+  const token = useUserStore().token;
+  return axios.post(`${API_URL}/dechets/${dechetId}/clean`, {}, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
+
+export async function cancelCleaning(dechetId) {
+  const token = useUserStore().token;
+  return axios.delete(`${API_URL}/dechets/${dechetId}/clean`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
 }
