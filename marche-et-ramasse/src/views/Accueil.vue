@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-beigeCustome px-3 p-1">
+    <div class="bg-beigeCustome px-5 p-1">
         <p class="text-center text-xs"> Ici, tu peux référencer les déchets rencontrés en randonnée et
             encourager une communauté de randonneurs responsables.</p>
 
@@ -49,7 +49,7 @@
 
                         </div>
                         <div class="border cursor-pointer transition rounded-lg p-1 "
-                            :class="userStore.isToClean(dechet.id) ? 'bg-customGreen border-0 p-1' : 'bg-gray-100'">
+                            :class="userStore.isToClean(dechet.id) || cleaningStatus[dechet.id] ? 'bg-customGreen border-0 p-1' : 'bg-gray-100'">
                             <img src="/public/icons/autres/icons8-drapeau-100 3.png" alt="Drapeau">
                         </div>
                     </div>
@@ -59,7 +59,12 @@
                     </div>
                 </div>
             </div>
+
         </div>
+
+    </div>
+    <div class="w-full h-[400px] mb-[-75px] mt-15 border-t-2 border-gray-300 ">
+        <div id="map" class="w-full h-full"></div>
     </div>
 </template>
 
@@ -69,27 +74,64 @@
 <script setup lang='js'>
 import { useRouter } from 'vue-router'
 import { onMounted, ref, nextTick } from 'vue'
-import { getAllDechets } from '../services/api'
+import { getAllDechets, getCleaningStatus } from '../services/api'
 import { truncateText } from '../tools/utils'
 import { useUserStore } from '../stores/user'
 import L from "leaflet"
 const router = useRouter()
 const dechets = ref([])
 const userStore = useUserStore()
+const cleaningStatus = ref({});
 
-
+import 'leaflet/dist/leaflet.css'
 onMounted(async () => {
     try {
         const response = await getAllDechets();
-        // console.log('donnees  backend:', dechets);
         dechets.value = response
         console.log('donnees  backend2:', dechets);
 
-    } catch (err) {
-        console.error('Erreur lors de la récupération des déchets:', err);
+        // statut pour chaque déchet 
+        for (const dechet of dechets.value) {
+            try {
+                const res = await getCleaningStatus(dechet.id);
+                cleaningStatus.value[dechet.id] = res.isCleaning;
+            } catch (e) {
+                cleaningStatus.value[dechet.id] = false;
+            }
+        }
+
+    } catch (e) {
+        console.error('Erreur lors de la récupération des déchets:', e);
     }
 
+    if (navigator.onLine) {
+        await nextTick()
+        try {
+            const first = dechets.value[0];
+            if (!first || !first.latitude || !first.longitude) { console.log("pb") };
+
+            let zoomLevel = 12
+            const map = L.map('map').setView([Number(first.latitude), Number(first.longitude)], zoomLevel);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors',
+            }).addTo(map)
+
+            L.marker([Number(first.latitude), Number(first.longitude)])
+                .addTo(map)
+                //  .bindPopup(`<b>${dechets.value.lieu}</b>`)
+                .openPopup()
+
+        } catch (error) {
+            console.error('Erreur récupération déchet:', error)
+            // dechet.value = null
+        }
+    }
 });
+
+
+
 
 // const props = defineProps({
 //     id: Number,

@@ -25,7 +25,7 @@
                         </div>
                         <div @click="saveToClean(dechet.id)"
                             class="border flex justify-between  items-center cursor-pointer transition rounded-lg"
-                            :class="userStore.isToClean(dechet.id) ? 'bg-customGreen border-0 p-2' : 'bg-gray-200  border-2 border-gray-300 p-1.5'">
+                            :class="userStore.isToClean(dechet.id) || isCleaning === true ? 'bg-customGreen border-0 p-2' : 'bg-gray-200  border-2 border-gray-300 p-1.5'">
                             <p class="ml-1 mr-1.5">Je ramasse</p>
 
                             <img src="/public/icons/autres/icons8-drapeau-100 3.png" class="mr-1" alt="Drapeau">
@@ -56,8 +56,8 @@
                     </div>
 
                 </div>
-                <div class="flex items-center border-b border-t-1 border-gray-400 space-x-2 ">
-                    <div id="map" style="height: 400px;"></div>
+                <div class="flex items-center border-t-1 border-gray-400 space-x-2 mb-[-80px] ">
+                    <div id="map" style="height: 396px;"></div>
                 </div>
             </div>
 
@@ -90,12 +90,12 @@ onMounted(async () => {
         console.log(dechet.value)
 
         await nextTick()
-        // Récupére l'état !
+        // Récupére l'état/status du signalement !
         if (navigator.onLine) {
             try {
                 const res = await getCleaningStatus(id);
                 isCleaning.value = res.isCleaning;
-                console.log('log',isCleaning)
+                console.log('log',isCleaning.value)
             } catch (err) {
                 console.error('Impossible de récupérer l’état de ramassage', err);
             }
