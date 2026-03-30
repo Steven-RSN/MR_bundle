@@ -2,6 +2,17 @@ import { beforeEach, describe, it, expect, vi, test } from "vitest";
 import { sendDechetToServer } from "../src/services/api.js";
 import { setActivePinia, createPinia } from 'pinia'
 import axios from 'axios';
+//  l'endpoint 
+
+// -----------------------------------------------------------------------------
+// verifier la coherence entre le test et la fonction reelle du service API.
+// fonction cible: src/services/api.js -> sendDechetToServer()
+// Type de test: unitaire (service) avec mock de dependance externe (axios)
+// Ce que ce test NE couvre PAS: le vrai backend, la vraie URL reseau, la latence.
+// -----------------------------------------------------------------------------
+
+// Initialisation d'un store Pinia avant chaque test.
+// Pourquoi: sendDechetToServer lit useUserStore().token dans le service.
 
 
 // initialisation du store Pinia
