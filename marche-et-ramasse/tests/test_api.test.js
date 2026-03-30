@@ -15,12 +15,12 @@ import axios from 'axios';
 // Pourquoi: sendDechetToServer lit useUserStore().token dans le service.
 
 
-// initialisation du store Pinia
+//Initialisation du store Pinia
 beforeEach(() => {
   setActivePinia(createPinia())
 })
 
-// Mock generale de axios pour controler la rep
+//Mock generale de axios pour controler la rep
 vi.mock('axios')
 
 // force un retour de succes
@@ -29,11 +29,10 @@ axios.post.mockResolvedValue({
 })
 const API_URL = 'https://192.168.1.63:5173/api'; //backend
 
-
 describe("sendDechetToServer()", () => {
     test("Retourne la réponse du serveur lors de l'envoi de la requête pour enregistrer un déchet ", async () => {
       
-      // represente le payload attendu par registerDechet()
+      //represente le payload attendu par registerDechet()
       const dechet_test = {
         idUser: 1,
         images: "uploads/1/img_0.webp",
@@ -47,14 +46,13 @@ describe("sendDechetToServer()", () => {
         date: new Date().toISOString()
       }
 
-      //la fonction appelle sendDechetToServer() puis renvoi response.data
+      //La fonction appelle sendDechetToServer() puis renvoi response.data
       const result = await sendDechetToServer(dechet_test);
 
-      // Verification de la donnée attendue vs reçue: 
-      // Attendu : retourne { success: true }
+      //Verification de la donnée attendue vs reçue: 
+      //Attendu : retourne { success: true }
       expect(result.success).toEqual(true);
     });
-
     test('')
 });
 
