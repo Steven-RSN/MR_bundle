@@ -1,18 +1,14 @@
 name: CD – Déploiement VPS OVH
 
-# Déclenché uniquement après que la CI soit passée sur main
+# Déclenché uniquement manuellement depuis l'onglet Actions de GitHub
 on:
-  workflow_run:
-    workflows: ["CI – Marche&Ramasse"]
-    types: [completed]
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
     name: Déployer sur le VPS OVH
     runs-on: ubuntu-latest
-    # Ne déploie que si la CI a réussi
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # Pas de condition if: le déclenchement manuel suffit comme intention explicite
 
     steps:
       - name: Récupérer le code
