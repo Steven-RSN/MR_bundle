@@ -30,6 +30,12 @@ export async function getAllDechetPending() {
     return db.getAll(STORE);
 }
 
+// Récupère un déchet local par son id
+export async function getDechetById(id) {
+    const db = await getDB();
+    return db.get(STORE, id);
+}
+
 // Supprime un élément local par son id (après sync réussi)
 export async function deletePending(id) {
     const db = await getDB();

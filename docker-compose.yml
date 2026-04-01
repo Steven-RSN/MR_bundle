@@ -1,0 +1,56 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: metr-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - metr-net
+
+  backend:
+    build:
+      context: ./back_end_M-R
+      dockerfile: Dockerfile
+    container_name: metr-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT}
+      DB_HOST: db
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
+      JWT_SECRET: ${JWT_SECRET}
+      BACK_URL: ${BACK_URL}
+    depends_on:
+      - db
+    volumes:
+      - ./back_end_M-R/uploads:/app/uploads
+    networks:
+      - metr-net
+
+  frontend:
+    build:
+      context: ./marche-et-ramasse
+      dockerfile: Dockerfile
+    container_name: metr-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - metr-net
+
+volumes:
+  mysql_data:
+
+networks:
+  metr-net:
+    driver: bridge

@@ -6,3 +6,5 @@ function sanitize(data) {
     .replace(/<\/?[^>]+>/gi, '') 
     .replace(/\\/g, '');         
 }
+
+  module.exports = sanitize;

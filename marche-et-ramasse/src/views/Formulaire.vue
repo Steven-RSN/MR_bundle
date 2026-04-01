@@ -263,10 +263,11 @@ async function enregistrer() {
     commentaire: commentaire.value.trim(),
     latitude: gps.value.latitude,
     longitude: gps.value.longitude,
-    images: [...imgConvert]
+    images: [...imgConvert],
+    date_signalement: new Date().toLocaleDateString('fr-FR')
   };
   if (!validerData(data)) { return }
-  
+
   //tentative d'envoi au backend
   try {
     if (!navigator.onLine) { throw new Error('offline') }
@@ -282,12 +283,30 @@ async function enregistrer() {
     throw new Error('backend-error')
 
   } catch (e) {
-    // si pas connecté, pas de sauvegarde locale
-    if (e?.status === 401) {
+    const status = e?.response?.status ?? e?.status ?? null
+    const backendMessage = e?.response?.data?.message
+
+    // Erreur d'auth: on informe l'utilisateur, pas de sauvegarde locale trompeuse.
+    if (status === 401) {
       message.value = 'Vous devez être connecté pour poster une alerte.'
       messageType.value = 'error'
       return
     }
+
+    // Erreur de validation/metier: afficher l'erreur backend reelle.
+    if (status === 400 || status === 409) {
+      message.value = backendMessage || 'Données invalides, vérifiez le formulaire.'
+      messageType.value = 'error'
+      return
+    }
+
+    const canFallbackLocally = !navigator.onLine || e?.message === 'offline' || !e?.response || status >= 500
+    if (!canFallbackLocally) {
+      message.value = backendMessage || 'Erreur lors de l\'envoi du signalement.'
+      messageType.value = 'error'
+      return
+    }
+
     try {
       //sauvegarde locale
       console.log('Hors ligne, sauvegarde locale...')

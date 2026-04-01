@@ -33,7 +33,8 @@
         v-else
         v-for="dechet in dechets"
         :key="dechet.id"
-        class="card border-1 b-3-customGreen bg-base-100 w-70 shadow-xl mx-auto mb-12 transition hover:shadow-2xl"
+        class="card border-1 b-3-customGreen bg-base-100 w-70 shadow-xl mx-auto mb-12 transition hover:shadow-2xl cursor-pointer"
+        @click="$router.push('/fiche-locale/' + dechet.id)"
       >
         <!-- Image -->
         <figure class="h-45" v-if="dechet.images?.length">
@@ -60,7 +61,7 @@
             <div class="flex gap-2">
               <button
                 class="btn btn-success btn-xs"
-                @click="syncDechet(dechet)"
+                @click.stop="syncDechet(dechet)"
                 :disabled="syncing[dechet.id]"
               >
                 {{ syncing[dechet.id] ? 'Envoi…' : 'Sync' }}
@@ -68,7 +69,7 @@
 
               <button
                 class="btn btn-error btn-xs"
-                @click="deleteDechetLocal(dechet.id)"
+                @click.stop="deleteDechetLocal(dechet.id)"
               >
                 ✕
               </button>
@@ -204,6 +205,8 @@ async function clearAllDechets() {
   showConfirmClear.value = false
   message.value = "Tous les signalements locaux ont été supprimés."
 }
+
+
 </script>
 
 <style scoped>

@@ -9,11 +9,19 @@ const router = createRouter({
       component: () => import('../views/Accueil.vue')
     },
 
-    // route pour chaque déchet:
+    // route pour chaque déchet (serveur):
     {
       path: '/ficheDechet/:id',
       name: 'FicheDechet',
       component: () => import('../views/ficheDechet.vue'),
+      props: true
+    },
+
+    // route pour la fiche d'un déchet local (IndexedDB, avant synchronisation):
+    {
+      path: '/fiche-locale/:id',
+      name: 'FicheDechetLocale',
+      component: () => import('../views/ficheDechetLocale.vue'),
       props: true
     },
     {

@@ -3,19 +3,16 @@
 import axios from 'axios';
 import { useUserStore } from '../stores/user';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-const API_URL = 'https://192.168.1.63:5173/api'; //backend
 export async function sendDechetToServer(dechet) {
   const token = useUserStore().token
-  console.log("le token du front", token)
   try {
-
     const response = await axios.post(`${API_URL}/dechets/registerDechet`, dechet, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
-
     return response.data;
 
   } catch (err) {

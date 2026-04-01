@@ -14,7 +14,6 @@ import axios from 'axios';
 // Initialisation d'un store Pinia avant chaque test.
 // Pourquoi: sendDechetToServer lit useUserStore().token dans le service.
 
-
 //Initialisation du store Pinia
 beforeEach(() => {
   setActivePinia(createPinia())

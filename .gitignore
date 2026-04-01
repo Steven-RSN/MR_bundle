@@ -1,0 +1,15 @@
+# Variables d'environnement – ne jamais commiter
+.env
+*.env
+
+# Dépendances
+node_modules/
+
+# Build frontend
+marche-et-ramasse/dist/
+
+# Uploads utilisateurs
+back_end_M-R/uploads/*/
+
+# Logs
+*.log

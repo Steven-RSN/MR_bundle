@@ -1,7 +1,25 @@
 const dechetsModel = require('../models/dechetModel')
 const fs = require('fs')
 const path = require('path')
+const dechetsService = require('../service/dechetService')
 
+exports.ajoutDechet = async (req, res) => {
+    try {
+
+        const result = await dechetsService.ajouterDechet(req.body);
+        res.status(201).json({ success: true, id: result.id });
+
+    } catch (err) {
+        console.error(err);
+        if (err.status) {
+            return res.status(err.status).json(err.payload);
+        }
+        res.status(500).json({success: false, message: 'Erreur serveur'});
+    }
+}
+
+
+/*
 exports.ajoutDechet = async (req, res) => {
     try {
         // Nettoyer toutes les données
@@ -65,7 +83,7 @@ exports.ajoutDechet = async (req, res) => {
     }
 }
 
-
+*/
 exports.getAllDechet = async (req, res) => {
     try {
         const dechetsData = await dechetsModel.findAll();

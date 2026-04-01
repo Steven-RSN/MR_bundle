@@ -99,8 +99,8 @@ exports.ajouterSignalement = async (data) => {;
         );
         const id_alertWaste = alertResult.insertId;
         await conn.commit();
-
-        return { id_alertWaste, id_volume, id_location };
+        return { id_alertWaste, id_volume, id_location }
+        
     } catch (err) {
         await conn.rollback();
         console.error("Erreur ajout signalement :", err);
@@ -108,7 +108,7 @@ exports.ajouterSignalement = async (data) => {;
     } finally {
         conn.release();
     }
-};
+}
 
 
 

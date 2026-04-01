@@ -1,0 +1,151 @@
+name: CI – Marche&Ramasse
+
+# Déclenché à chaque push et pull request sur main
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─────────────────────────────────────────
+  # 1. Tests unitaires backend (Vitest/Jest)
+  # ─────────────────────────────────────────
+  backend-tests:
+    name: Backend – Tests unitaires
+    runs-on: ubuntu-latest
+
+    services:
+      # Base de données MySQL pour les tests d'intégration
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: metr_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: back_end_M-R/package-lock.json
+
+      - name: Installer les dépendances backend
+        working-directory: back_end_M-R
+        run: npm ci
+
+      - name: Lancer les tests backend
+        working-directory: back_end_M-R
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: root
+          DB_PASSWORD: root
+          DB_NAME: metr_test
+          JWT_SECRET: ci-secret-test
+        run: |
+          # Lance le script 'test' s'il est défini, sinon ignore proprement
+          if npm run | grep -q '"test"'; then
+            npm test
+          else
+            echo "Aucun script de test backend défini – étape ignorée"
+          fi
+
+  # ─────────────────────────────────────────
+  # 2. Tests unitaires frontend (Vitest)
+  # ─────────────────────────────────────────
+  frontend-unit-tests:
+    name: Frontend – Tests unitaires (Vitest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: marche-et-ramasse/package-lock.json
+
+      - name: Installer les dépendances frontend
+        working-directory: marche-et-ramasse
+        run: npm ci
+
+      - name: Lancer les tests Vitest
+        working-directory: marche-et-ramasse
+        run: npx vitest run
+
+  # ─────────────────────────────────────────
+  # 3. Tests E2E (Cypress)
+  # ─────────────────────────────────────────
+  e2e-tests:
+    name: Frontend – Tests E2E (Cypress)
+    runs-on: ubuntu-latest
+    # Attend la fin des tests unitaires avant de lancer Cypress
+    needs: frontend-unit-tests
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: marche-et-ramasse/package-lock.json
+
+      - name: Installer les dépendances frontend
+        working-directory: marche-et-ramasse
+        run: npm ci
+
+      - name: Build du frontend
+        working-directory: marche-et-ramasse
+        env:
+          CI: true
+          VITE_API_URL: http://localhost:3000
+        run: npm run build
+
+      - name: Lancer les tests Cypress (Vite en HTTP pour CI)
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: marche-et-ramasse
+          # Démarre Vite en mode HTTP (pas de mkcert en CI)
+          start: npx vite --mode ci --host
+          wait-on: http://localhost:5173
+          wait-on-timeout: 60
+          browser: chrome
+          headless: true
+        env:
+          CI: true
+          CYPRESS_BASE_URL: http://localhost:5173
+          VITE_API_URL: http://localhost:3000
+
+      - name: Archiver les captures d'écran en cas d'échec
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: marche-et-ramasse/cypress/screenshots
+          retention-days: 7
+
+      - name: Archiver les vidéos Cypress
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-videos
+          path: marche-et-ramasse/cypress/videos
+          retention-days: 7
