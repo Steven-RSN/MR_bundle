@@ -126,8 +126,8 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           working-directory: marche-et-ramasse
-          # Démarre Vite en mode HTTP (pas de mkcert en CI)
-          start: npx vite --mode ci --host
+          # Force CI=true au démarrage et attend l'URL HTTP servie en mode CI
+          start: CI=true npx vite --mode ci --host
           wait-on: http://localhost:5173
           wait-on-timeout: 60
           browser: chrome
