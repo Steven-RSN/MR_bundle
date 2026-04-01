@@ -1,4 +1,4 @@
-name: CI – Marche&Ramasse
+name: Tests du projet
 
 # Déclenché à chaque push et pull request sur main
 on:
@@ -15,7 +15,7 @@ jobs:
   # 1. Tests unitaires backend (Vitest/Jest)
   # ─────────────────────────────────────────
   backend-tests:
-    name: Backend – Tests unitaires
+    name: Tests backend
     runs-on: ubuntu-latest
 
     services:
@@ -69,7 +69,7 @@ jobs:
   # 2. Tests unitaires frontend (Vitest)
   # ─────────────────────────────────────────
   frontend-unit-tests:
-    name: Frontend – Tests unitaires (Vitest)
+    name: Tests front (unitaires)
     runs-on: ubuntu-latest
 
     steps:
@@ -95,7 +95,7 @@ jobs:
   # 3. Tests E2E (Cypress)
   # ─────────────────────────────────────────
   e2e-tests:
-    name: Frontend – Tests E2E (Cypress)
+    name: Tests front (E2E)
     runs-on: ubuntu-latest
     # Attend la fin des tests unitaires avant de lancer Cypress
     needs: frontend-unit-tests
