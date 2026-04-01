@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Récupérer le code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Déployer via SSH sur le VPS
         uses: appleboy/ssh-action@v1.0.3
