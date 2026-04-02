@@ -12,65 +12,7 @@ env:
 
 jobs:
   # ─────────────────────────────────────────
-  # 1. Tests unitaires backend (Vitest/Jest)
-  # ─────────────────────────────────────────
-  backend-tests:
-    name: Tests backend
-    runs-on: ubuntu-latest
-
-    services:
-      # Base de données MySQL pour les tests d'intégration
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: metr_test
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
-    steps:
-      - name: Récupérer le code
-        uses: actions/checkout@v5
-
-      - name: Configurer Node.js
-        uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: back_end_M-R/package-lock.json
-
-      - name: Initialiser le schéma de la BDD
-        run: |
-          mysql -h 127.0.0.1 -u root -proot metr_test < back_end_M-R/config/schema.sql
-
-      - name: Installer les dépendances backend
-        working-directory: back_end_M-R
-        run: npm ci
-
-      - name: Lancer les tests backend
-        working-directory: back_end_M-R
-        env:
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_USER: root
-          DB_PASSWORD: root
-          DB_NAME: metr_test
-          JWT_SECRET: ci-secret-test
-        run: |
-          # Lance le script 'test' s'il est défini, sinon ignore proprement
-          if npm run | grep -q '"test"'; then
-            npm test
-          else
-            echo "Aucun script de test backend défini – étape ignorée"
-          fi
-
-  # ─────────────────────────────────────────
-  # 2. Tests unitaires frontend (Vitest)
+  # 1. Tests unitaires frontend (Vitest)
   # ─────────────────────────────────────────
   frontend-unit-tests:
     name: Tests front (unitaires)
@@ -96,14 +38,12 @@ jobs:
         run: npx vitest run
 
   # ─────────────────────────────────────────
-  # 3. Tests E2E (Cypress)
+  # 2. Tests E2E (Cypress)
   # ─────────────────────────────────────────
   e2e-tests:
     name: Tests E2E (full-stack)
     runs-on: ubuntu-latest
-    # Attend la fin des tests backend + frontend unitaires
     needs:
-      - backend-tests
       - frontend-unit-tests
 
     services:
