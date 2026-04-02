@@ -126,12 +126,11 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           working-directory: marche-et-ramasse
-          # Force CI=true au démarrage et attend l'URL HTTP servie en mode CI
-          start: CI=true npx vite --mode ci --host
+          # CI=true est déjà défini dans env, on lance simplement Vite
+          start: npx vite --mode ci --host
           wait-on: http://localhost:5173
           wait-on-timeout: 60
           browser: chrome
-          headless: true
         env:
           CI: true
           CYPRESS_BASE_URL: http://localhost:5173
