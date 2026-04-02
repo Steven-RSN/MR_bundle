@@ -24,12 +24,12 @@
                         <!-- Pas de "Je ramasse" : le signalement n'est pas encore sur le serveur -->
                         <div class="border flex justify-between items-center rounded-lg bg-gray-200 border-2 border-gray-300 p-1.5 opacity-40 cursor-not-allowed">
                             <p class="ml-1 mr-1.5">Je ramasse</p>
-                            <img src="/public/icons/autres/icons8-drapeau-100 3.png" class="mr-1" alt="Drapeau">
+                            <img src="/icons/autres/icons8-drapeau-100 3.png" class="mr-1" alt="Drapeau">
                         </div>
                     </div>
 
                     <div class="flex items-center mt-4">
-                        <img src="/public/icons/profil/neom-0SUho_B0nus-unsplash 2.png"
+                        <img src="/icons/profil/neom-0SUho_B0nus-unsplash 2.png"
                             class="w-12 h-12 object-cover rounded-full" alt="">
                         <div class="ml-3 ">
                             <h3 class="text-lg">{{ toUp(userStore.pseudo) }}</h3>
@@ -38,7 +38,7 @@
                     </div>
 
                     <div class="flex items-center border-t border-gray-400 space-x-2 mt-4 pt-6 ">
-                        <img src="/public/icons/form/icons8-calendrier-100 2.png" class="w-8" alt="">
+                        <img src="/icons/form/icons8-calendrier-100 2.png" class="w-8" alt="">
                         <label class="label-s">{{ dechet.date_signalement }}</label>
                     </div>
 

@@ -90,141 +90,89 @@ describe('Test E2E : Enregistrement d\'un déchet (Formulaire)', () => {
   });
 
   // ========================================================================
-  // TEST 3 : Remplir et soumettre le formulaire (version simplifiée)
+  // TEST 3 : Remplir et soumettre le formulaire
   // ========================================================================
   it('Devrait remplir le formulaire et soumettre la requête', () => {
-    
-    // Naviguer vers le formulaire
     cy.contains('a, button', /Signaler|Formulaire/i, { timeout: 5000 })
       .click({ force: true });
-    
+
     cy.wait(2000);
-    
-    // ====================================================================
-    // ÉTAPE 1 : Remplir les champs visibles du formulaire
-    // ====================================================================
-    
-    // Saisir le lieu
+
     cy.get('input#lieu', { timeout: 5000 })
-      .type('Parc de la Tête d\'Or, Lyon', { force: true, delay: 30 });
-    
-    // Saisir le type de déchet
+      .type('Parc de la Tete d\'Or, Lyon', { force: true, delay: 30 });
+
     cy.get('select', { timeout: 5000 })
       .select('plastique', { force: true });
-    
-    // Saisir le volume
+
     cy.get('input#volume', { timeout: 5000 })
       .type('25', { force: true, delay: 30 });
-    
-    // Saisir le poids  
+
     cy.get('input#poids', { timeout: 5000 })
       .type('10', { force: true, delay: 30 });
-    
-    // Ajouter une description
-    cy.get('textarea', { timeout: 5000 })
-      .type('Beaucoup de déchets plastiques trouvés près du lac', { force: true, delay: 30 });
-    
-    // ====================================================================
-    // ÉTAPE 2 : Cliquer le bouton d'envoi
-    // ====================================================================
-    
-    // Chercher le vrai bouton "Ajouter le déchet"
-    cy.contains('button', /Ajouter le déchet|Envoyer|Soumettre|Signaler|Enregistrer/i, { timeout: 5000 })
-      .click({ force: true });
-    
-    // Attendre que la requête soit envoyée
-    cy.wait(3000);
-    
-    // ====================================================================
-    // ÉTAPE 3 : Vérifier qu'un message s'affiche (succès OU erreur)
-    // ====================================================================
-    
-    // On s'attend soit à un message succès, soit un message d'erreur
-    // (si le backend n'est pas lancé, on aura une erreur réseau/auth)
-    cy.get('body').should('contain.text', /succès|enregistré|merci|confirmé|ajouté|erreur|invalide|authentifi/i);
-    
-      // OU si le formulaire ne peut pas obtenir la géolocalisation,
-      // on accepte aussi ce message (prouve que la validation fonctionne)
-      cy.get('body').then(($body) => {
-        const bodyText = $body.text();
-        // Vérifier qu'un message d'erreur ou de succès apparaît
-        const hasMessage = /succès|enregistré|merci|confirmé|ajouté|erreur|invalide|authentifi|géolocalisation/i.test(bodyText);
-        expect(hasMessage).to.be.true;
-        });
 
-        // ========================================================================
-        // TEST 4 : Vérifier que le formulaire affiche les erreurs de validation
-        // ========================================================================
-        it('Devrait afficher un message d\'erreur si la géolocalisation est manquante', () => {
-    
-          // Naviguer vers le formulaire
-          cy.contains('a, button', /Signaler|Formulaire/i, { timeout: 5000 })
-            .click({ force: true });
-    
-          cy.wait(2000);
-    
-          // ====================================================================
-          // Remplir le formulaire SANS géolocalisation
-          // ====================================================================
-    
-          // Saisir le lieu
-          cy.get('input#lieu', { timeout: 5000 })
-            .type('Parc public', { force: true, delay: 30 });
-    
-          // Saisir le type de déchet
-          cy.get('select', { timeout: 5000 })
-            .select('plastique', { force: true });
-    
-          // Saisir le volume
-          cy.get('input#volume', { timeout: 5000 })
-            .type('5', { force: true, delay: 30 });
-    
-          // Saisir le poids
-          cy.get('input#poids', { timeout: 5000 })
-            .type('2', { force: true, delay: 30 });
-    
-          // Ajouter une description
-          cy.get('textarea', { timeout: 5000 })
-            .type('Test déchet', { force: true, delay: 30 });
-    
-          // Cliquer le bouton
-          cy.contains('button', /Ajouter le déchet|Envoyer|Soumettre/i, { timeout: 5000 })
-            .click({ force: true });
-    
-          cy.wait(1000);
-    
-          // ====================================================================
-          // Vérifier qu'on reçoit un message d'erreur (pas de géolocalisation)
-          // ====================================================================
-    
-          cy.get('body').should('contain.text', 'géolocalisation');
-      });
+    cy.get('textarea', { timeout: 5000 })
+      .type('Beaucoup de dechets plastiques trouves pres du lac', { force: true, delay: 30 });
+
+    cy.contains('button', /Ajouter le dechet|Ajouter le déchet|Envoyer|Soumettre|Signaler|Enregistrer/i, { timeout: 5000 })
+      .click({ force: true });
+
+    cy.wait(2000);
+
+    // Le message peut varier selon backend/geolocalisation; on valide les cas attendus.
+    cy.get('body').then(($body) => {
+      const bodyText = $body.text();
+      const hasMessage = /succes|succès|enregistre|enregistré|merci|confirme|confirmé|ajoute|ajouté|erreur|invalide|authentifi|geolocalisation|géolocalisation/i.test(bodyText);
+      expect(hasMessage).to.be.true;
+    });
+  });
+
+  // ========================================================================
+  // TEST 4 : Vérifier le message en cas de geolocalisation manquante
+  // ========================================================================
+  it('Devrait afficher un message d\'erreur si la geolocalisation est manquante', () => {
+    cy.contains('a, button', /Signaler|Formulaire/i, { timeout: 5000 })
+      .click({ force: true });
+
+    cy.wait(2000);
+
+    cy.get('input#lieu', { timeout: 5000 })
+      .type('Parc public', { force: true, delay: 30 });
+
+    cy.get('select', { timeout: 5000 })
+      .select('plastique', { force: true });
+
+    cy.get('input#volume', { timeout: 5000 })
+      .type('5', { force: true, delay: 30 });
+
+    cy.get('input#poids', { timeout: 5000 })
+      .type('2', { force: true, delay: 30 });
+
+    cy.get('textarea', { timeout: 5000 })
+      .type('Test dechet', { force: true, delay: 30 });
+
+    cy.contains('button', /Ajouter le dechet|Ajouter le déchet|Envoyer|Soumettre/i, { timeout: 5000 })
+      .click({ force: true });
+
+    cy.wait(1000);
+    cy.get('body').invoke('text').should('match', /geolocalisation|géolocalisation/i);
   });
 
 
 });
 
-// ============================================================================
-// NOTES POUR LE MÉMOIRE
-// ============================================================================
+// NOTES POUR LE MÉMOIRE!!!!!!!!
 //
-// Ce test E2E teste le FLUX COMPLET :
+// test E2E teste le FLUX COMPLET :
 // 
 // Utilisateur (clique sur UI dans Cypress)
 //    ↓
-// Vue.js (Formulaire.vue, routes)
+// Vue.js (Formulaire.vue)
 //    ↓
 // api.js (sendDechetToServer, envoie axios POST)
 //    ↓
-// Backend Express réel (POST /registerDechet)
+// Backend Express  (POST /registerDechet)
 //    ↓
-// Base de données MySQL (INSERT)
+// Base de données MySQL )
 //    ↓
-// Réponse frontend (message "succès" affiché)
-//
-// DIFFÉRENCE avec test_api.test.js :
-// - test_api.test.js : Mock axios → pas de requête réelle → rapide mais incomplet
-// - Test E2E : Pas de mock → requête réelle → lent mais représente la réalité utilisateur
-//
-// ============================================================================
+// Réponse frontend (message succè) !
 

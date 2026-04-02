@@ -6,7 +6,7 @@
             </h1>
 
             <div class="flex items-center my-6">
-                <img src="/public/icons/profil/neom-0SUho_B0nus-unsplash 2.png"
+                <img src="/icons/profil/neom-0SUho_B0nus-unsplash 2.png"
                     class="w-16 h-16 object-cover rounded-full" alt="">
                 <div class="ml-3">
                     <h3 class="text-lg">{{ profilUser.pseudo || 'Bernard' }}</h3>

@@ -50,7 +50,7 @@
                         </div>
                         <div class="border cursor-pointer transition rounded-lg p-1 "
                             :class="userStore.isToClean(dechet.id) || cleaningStatus[dechet.id] ? 'bg-customGreen border-0 p-1' : 'bg-gray-100'">
-                            <img src="/public/icons/autres/icons8-drapeau-100 3.png" alt="Drapeau">
+                            <img src="/icons/autres/icons8-drapeau-100 3.png" alt="Drapeau">
                         </div>
                     </div>
                     <div class="flex items-center border-t border-gray-300 space-x-2 mt-1 pt-2">
