@@ -5,16 +5,17 @@ import { VitePWA } from 'vite-plugin-pwa'
 import tailwindcss from '@tailwindcss/vite'
 import mkcert from 'vite-plugin-mkcert'
 
-// En CI (GitHub Actions), mkcert ne peut pas générer de certificats SSL.
-// La variable CI=true est injectée automatiquement par GitHub Actions.
-const isCI = process.env.CI === 'true'
+export default defineConfig(({ mode }) => {
+  // Le mode `ci` est forcé dans GitHub Actions via `vite --mode ci`.
+  // On l'utilise en plus de CI=true pour éviter toute ambiguïté.
+  const isCI = process.env.CI === 'true' || mode === 'ci'
 
-export default defineConfig({
-  plugins: [
-    vue(),
-    tailwindcss(),
-    // mkcert activé uniquement en développement local, pas en CI
-    ...(isCI ? [] : [mkcert()]),
+  return {
+    plugins: [
+      vue(),
+      tailwindcss(),
+      // mkcert uniquement en local
+      ...(isCI ? [] : [mkcert()]),
     VitePWA({
       registerType: 'autoUpdate',
       strategies: 'generateSW', // service worker généré automatiquement
@@ -44,21 +45,22 @@ export default defineConfig({
         ],
       }
     })
-  ],
+    ],
 
-  test: {
-    environment: 'jsdom',
-  },
+    test: {
+      environment: 'jsdom',
+    },
 
-  server: {
-    host: true,
-    // HTTPS uniquement en dev local (désactivé en CI)
-    https: !isCI,
-    proxy: {
-      '/api': {
-        target: process.env.VITE_API_URL || 'http://192.168.1.63:3000',
-        changeOrigin: false,
-        rewrite: path => path.replace(/^\/api/, '')
+    server: {
+      host: true,
+      // HTTPS uniquement en local
+      https: !isCI,
+      proxy: {
+        '/api': {
+          target: process.env.VITE_API_URL || 'http://192.168.1.63:3000',
+          changeOrigin: false,
+          rewrite: path => path.replace(/^\/api/, '')
+        }
       }
     }
   }
