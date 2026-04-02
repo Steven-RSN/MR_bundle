@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
   // Le mode `ci` est forcé dans GitHub Actions via `vite --mode ci`.
   // On l'utilise en plus de CI=true pour éviter toute ambiguïté.
   const isCI = process.env.CI === 'true' || mode === 'ci'
+  const useHttps = isCI ? false : process.env.VITE_HTTPS !== 'false'
 
   return {
     plugins: [
@@ -53,8 +54,8 @@ export default defineConfig(({ mode }) => {
 
     server: {
       host: true,
-      // HTTPS uniquement en local
-      https: !isCI,
+      // HTTPS activé en local sauf si VITE_HTTPS=false
+      https: useHttps,
       proxy: {
         '/api': {
           target: process.env.VITE_API_URL || 'http://192.168.1.63:3000',

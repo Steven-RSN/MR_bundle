@@ -145,18 +145,16 @@ exports.getDechetAndUserByIdDechet = async (req, res) => {
         }
         // console.log(dechet)
         dechet.images = []
-        if (!dechet.image_path) {
-            console.error(err);
-
+        if (dechet.image_path) {
+            const fullPath = path.join(__dirname, '..', dechet.image_path)
+            if (fs.existsSync(fullPath)) {
+                const ext = path.extname(fullPath).substring(1);
+                const base64 = fs.readFileSync(fullPath, { encoding: 'base64' });
+                dechet.images.push(`data:image/${ext};base64,${base64}`);
+            } else {
+                console.warn(`Fichier image non trouvé : ${fullPath}`);
+            }
         }
-        const fullPath = path.join(__dirname, '..', dechet.image_path)
-        if (!fs.existsSync(fullPath)) {
-            console.warn(`Fichier image non trouvé : ${fullPath}`);
-        }
-
-        const ext = path.extname(fullPath).substring(1);
-        const base64 = fs.readFileSync(fullPath, { encoding: 'base64' });
-        dechet.images.push(`data:image/${ext};base64,${base64}`);
         //   console.log(dechet)
         res.json(dechet);
     } catch (e) {

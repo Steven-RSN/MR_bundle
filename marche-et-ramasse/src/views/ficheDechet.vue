@@ -5,7 +5,7 @@
 
             <div class="card bg-base-100 shadow-xl ">
                 <div class="flex justify-center ">
-                    <img :src="dechet.images[0]" alt="Shoes" class=" w-full object-cover rounded-t-xl" />
+                    <img :src="firstImage" alt="Image dechet" class="w-full object-cover rounded-t-xl" />
                 </div>
                 <div class="card-body">
                     <h2 class="card-title underline mt-[-8px]">
@@ -16,10 +16,10 @@
                         <div class="flex justify-around ">
 
                             <div class="badge mr-2 badge-outline border-2 b-2-customGreen bg-customGreen ">
-                                <p class="text-xs">{{ dechet.volume_litres }} Litres</p>
+                                <p class="text-xs">{{ dechet.volume_litres ?? '-' }} Litres</p>
                             </div>
                             <div class="badge mx-4 badge-outline border-2 b-2-customGreen bg-customGreen">
-                                <p class="text-xs">{{ dechet.poids_kg }} Kilos </p>
+                                <p class="text-xs">{{ dechet.poids_kg ?? '-' }} Kilos </p>
                             </div>
 
                         </div>
@@ -38,25 +38,25 @@
                         <img src="/icons/profil/neom-0SUho_B0nus-unsplash 2.png"
                             class="w-12 h-12 object-cover rounded-full<" alt="">
                         <div class="ml-3 ">
-                            <h3 class="text-lg">{{ toUp(dechet.pseudo) }}</h3>
+                            <h3 class="text-lg">{{ toUp(dechet.pseudo || 'Utilisateur') }}</h3>
                             <p class="text-xs">Statut: Gardien des Montagnes</p>
                         </div>
                     </div>
 
                     <div class="flex items-center border-t border-gray-400 space-x-2 mt-4 pt-6 ">
                         <img src="/icons/form/icons8-calendrier-100 2.png" class="w-8" alt="">
-                        <label class="label-s">{{ dechet.date_signalement }}</label>
+                        <label class="label-s">{{ displayDate }}</label>
 
                     </div>
 
                     <div class="flex items-center border-b border-t border-gray-400 space-x-2 mt-4 py-5">
                         <img src="/icons/form/iconsCom.png" class="w-7 mb-5.5 ml-1" alt="">
                         <label class="hidden">Description :</label>
-                        <p class="flex-1 focus:outline-none">{{ dechet.commentaire }}</p>
+                        <p class="flex-1 focus:outline-none">{{ dechet.commentaire || 'Aucune description' }}</p>
                     </div>
 
                 </div>
-                <div class="flex items-center border-t-1 border-gray-400 space-x-2 mb-[-80px] ">
+                <div class="flex items-center border-t-1 border-gray-400 space-x-2 mt-2">
                     <div id="map" style="height: 396px;"></div>
                 </div>
             </div>
@@ -68,7 +68,7 @@
 
 <script setup lang="js">
 
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { getDechetAndUserByIdDechet,getCleaningStatus  } from '../services/api'
 import L from "leaflet"
@@ -81,6 +81,8 @@ const route = useRoute()
 const dechet = ref(null)
 const userStore = useUserStore()
 const isCleaning = ref(false);
+const firstImage = computed(() => dechet.value?.images?.[0] || '/icons/logo/M&R.svg')
+const displayDate = computed(() => dechet.value?.date_signalement || 'Date indisponible')
 
 onMounted(async () => {
 

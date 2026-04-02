@@ -1,51 +1,48 @@
 name: Tests du projet
 
-# Déclenché à chaque push et pull request sur main
+# A chaque push et pull sur main
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  # ─────────────────────────────────────────
-  # 1. Tests unitaires frontend (Vitest)
-  # ─────────────────────────────────────────
+ 
+  # Test unitaire frontend (Vitest)
   frontend-unit-tests:
-    name: Tests front (unitaires)
+    name: Tests front (uni)
     runs-on: ubuntu-latest
 
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v5
 
-      - name: Configurer Node.js
+      - name: Configurer Node
         uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: marche-et-ramasse/package-lock.json
 
-      - name: Installer les dépendances frontend
+      - name: Installer les dépendances
         working-directory: marche-et-ramasse
         run: npm ci
 
-      - name: Lancer les tests Vitest
+      - name: Lancer Vitest
         working-directory: marche-et-ramasse
         run: npx vitest run
 
-  # ─────────────────────────────────────────
-  # 2. Tests E2E (Cypress)
-  # ─────────────────────────────────────────
+
+  #-----------------------------------
+  #Test E2E (Cypress)
   e2e-tests:
-    name: Tests E2E (full-stack)
+    name: Tests E2E
     runs-on: ubuntu-latest
     needs:
       - frontend-unit-tests
-
     services:
       mysql:
         image: mysql:8.0
@@ -71,15 +68,15 @@ jobs:
           cache: npm
           cache-dependency-path: marche-et-ramasse/package-lock.json
 
-      - name: Initialiser le schéma de la BDD
+      - name: Initialiser la BDD
         run: |
           mysql -h 127.0.0.1 -u root -proot metr_test < back_end_M-R/config/schema.sql
 
-      - name: Installer les dépendances backend
+      - name: Installer les dépendances back
         working-directory: back_end_M-R
         run: npm ci
 
-      - name: Démarrer le backend
+      - name: Démarrer le back
         working-directory: back_end_M-R
         env:
           NODE_ENV: test
@@ -93,11 +90,11 @@ jobs:
         run: |
           npm start > ../backend.log 2>&1 &
 
-      - name: Vérifier que le backend répond
+      - name: Vérifier que le backend est ok
         run: |
           for i in {1..30}; do
             if curl -fsS http://localhost:3000/test > /dev/null; then
-              echo "Backend prêt"
+              echo "Backend OK "
               exit 0
             fi
             sleep 2
@@ -106,7 +103,7 @@ jobs:
           cat backend.log || true
           exit 1
 
-      - name: Installer les dépendances frontend
+      - name: Installer dépendances front
         working-directory: marche-et-ramasse
         run: npm ci
 
@@ -117,11 +114,10 @@ jobs:
           VITE_API_URL: http://localhost:3000
         run: npm run build
 
-      - name: Lancer les tests Cypress (Vite en HTTP pour CI)
+      - name: Lancer les test Cypress
         uses: cypress-io/github-action@v6
         with:
           working-directory: marche-et-ramasse
-          # CI=true est déjà défini dans env, on lance simplement Vite
           start: npx vite --mode ci --host
           wait-on: http://localhost:5173
           wait-on-timeout: 60
@@ -131,22 +127,6 @@ jobs:
           CYPRESS_BASE_URL: http://localhost:5173
           VITE_API_URL: http://localhost:3000
 
-      - name: Afficher les logs backend en cas d'échec
+      - name: Afficher les logs si échec
         if: failure()
         run: cat backend.log || true
-
-      - name: Archiver les captures d'écran en cas d'échec
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-screenshots
-          path: marche-et-ramasse/cypress/screenshots
-          retention-days: 7
-
-      - name: Archiver les vidéos Cypress
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cypress-videos
-          path: marche-et-ramasse/cypress/videos
-          retention-days: 7

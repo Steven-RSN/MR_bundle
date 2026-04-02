@@ -1,20 +1,22 @@
-name: CD – Déploiement VPS OVH
+name: Dep
 
-# Déclenché uniquement manuellement depuis l'onglet Actions de GitHub
+# Lancement depuis gitHub action
+
 on:
   workflow_dispatch:
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    name: Déployer sur le VPS OVH
+    name: Deploy front + back sans Docker
     runs-on: ubuntu-latest
-    # Pas de condition if: le déclenchement manuel suffit comme intention explicite
 
+# Connexion SSH au serveur 
     steps:
-      - name: Récupérer le code
-        uses: actions/checkout@v5
-
-      - name: Déployer via SSH sur le VPS
+      - name: Deployer via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -23,18 +25,29 @@ jobs:
           port: 22
           script: |
             set -e
-
-            # Aller dans le dossier du projet sur le VPS
+            #  Maj le code
             cd /opt/metr
-
-            # Récupérer la dernière version du code
             git pull origin main
 
-            # Reconstruire et redémarrer les conteneurs (sans interruption de service)
-            docker compose pull
-            docker compose up -d --build --remove-orphans
+            # Installer et maj le backend
+            cd /opt/metr/back_end_M-R
+            npm ci --omit=dev
 
-            # Supprimer les anciennes images inutilisées
-            docker image prune -f
+            # Redemarrer le back avec PM2
+            pm2 describe metr-backend > /dev/null 2>&1 && pm2 restart metr-backend || pm2 start server.js --name metr-backend
+            pm2 save
 
-            echo "Déploiement terminé avec succès ✓"
+            # Build le front
+            cd /opt/metr/marche-et-ramasse
+            npm ci
+            npm run build
+
+            #Envoyer le front Nginx
+            sudo rm -rf /var/www/metr/*
+            sudo cp -r dist/* /var/www/metr/
+
+            #  Recharger Nginx
+            sudo nginx -t
+            sudo systemctl reload nginx
+
+            echo "Deploiement termine "

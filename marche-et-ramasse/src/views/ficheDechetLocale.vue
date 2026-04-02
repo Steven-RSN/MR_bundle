@@ -39,13 +39,13 @@
 
                     <div class="flex items-center border-t border-gray-400 space-x-2 mt-4 pt-6 ">
                         <img src="/icons/form/icons8-calendrier-100 2.png" class="w-8" alt="">
-                        <label class="label-s">{{ dechet.date_signalement }}</label>
+                        <label class="label-s">{{ dechet.date_signalement || 'Date indisponible' }}</label>
                     </div>
 
                     <div class="flex items-center border-b border-t border-gray-400 space-x-2 mt-4 py-5">
                         <img src="/icons/form/iconsCom.png" class="w-7 mb-5.5 ml-1" alt="">
                         <label class="hidden">Description :</label>
-                        <p class="flex-1 focus:outline-none">{{ dechet.commentaire }}</p>
+                        <p class="flex-1 focus:outline-none">{{ dechet.commentaire || 'Aucune description' }}</p>
                     </div>
 
                     <div class="flex justify-center mt-4 mb-2">
@@ -55,7 +55,7 @@
                     </div>
 
                 </div>
-                <div class="flex items-center border-t-1 border-gray-400 space-x-2 mb-[-80px] ">
+                <div class="flex items-center border-t-1 border-gray-400 space-x-2 mt-2">
                     <div id="map" style="height: 396px;"></div>
                 </div>
             </div>

@@ -63,7 +63,7 @@
         </div>
 
     </div>
-    <div class="w-full h-[400px] mb-[-75px] mt-15 border-t-2 border-gray-300 ">
+    <div class="w-full h-[400px] mt-15 border-t-2 border-gray-300">
         <div id="map" class="w-full h-full"></div>
     </div>
 </template>
@@ -104,29 +104,39 @@ onMounted(async () => {
         console.error('Erreur lors de la récupération des déchets:', e);
     }
 
-    if (navigator.onLine) {
-        await nextTick()
-        try {
-            const first = dechets.value[0];
-            if (!first || !first.latitude || !first.longitude) { console.log("pb") };
+    await nextTick()
+    try {
+        const fallbackLat = 43.6045
+        const fallbackLng = 1.444
 
-            let zoomLevel = 12
-            const map = L.map('map').setView([Number(first.latitude), Number(first.longitude)], zoomLevel);
+        const firstWithCoords = dechets.value.find((d) => {
+            const lat = Number(d?.latitude)
+            const lng = Number(d?.longitude)
+            return Number.isFinite(lat) && Number.isFinite(lng)
+        })
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors',
-            }).addTo(map)
+        const lat = Number.isFinite(Number(firstWithCoords?.latitude))
+            ? Number(firstWithCoords.latitude)
+            : fallbackLat
+        const lng = Number.isFinite(Number(firstWithCoords?.longitude))
+            ? Number(firstWithCoords.longitude)
+            : fallbackLng
 
-            L.marker([Number(first.latitude), Number(first.longitude)])
+        const map = L.map('map').setView([lat, lng], 12)
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors',
+        }).addTo(map)
+
+        if (firstWithCoords) {
+            L.marker([lat, lng])
                 .addTo(map)
-                //  .bindPopup(`<b>${dechets.value.lieu}</b>`)
                 .openPopup()
-
-        } catch (error) {
-            console.error('Erreur récupération déchet:', error)
-            // dechet.value = null
         }
+
+    } catch (error) {
+        console.error('Erreur initialisation carte:', error)
     }
 });
 
