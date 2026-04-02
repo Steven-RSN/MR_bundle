@@ -1,4 +1,4 @@
-# Variables d'environnement – ne jamais commiter
+# Variables d'env
 .env
 *.env
 
