@@ -18,7 +18,7 @@ describe('Test E2E : Enregistrement d\'un déchet (Formulaire)', () => {
   // avant chaque test, aller à la page d'accueil
   beforeEach(() => {
     // Désactiver la vérification HTTPS pour Vite (dev)
-    cy.visit('https://localhost:5173', {
+    cy.visit('/', {
       onBeforeLoad (win) {
         // Ignorer toute erreur de certificat HTTPS au niveau du navigateur
         win.addEventListener('error', () => false);

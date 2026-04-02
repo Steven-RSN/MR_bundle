@@ -7,7 +7,7 @@ describe('E2E - Formulaire de signalement', () => {
   beforeEach(() => {
     // On simule une session utilisateur persistée dans Pinia.
     // Le store user est persiste dans localStorage sous la cle "user".
-    cy.visit('https://localhost:5173', {
+    cy.visit('/', {
       onBeforeLoad(win) {
         win.localStorage.setItem(
           'user',
