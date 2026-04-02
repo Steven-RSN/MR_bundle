@@ -44,6 +44,10 @@ jobs:
           cache: npm
           cache-dependency-path: back_end_M-R/package-lock.json
 
+      - name: Initialiser le schéma de la BDD
+        run: |
+          mysql -h 127.0.0.1 -u root -proot metr_test < back_end_M-R/config/schema.sql
+
       - name: Installer les dépendances backend
         working-directory: back_end_M-R
         run: npm ci
@@ -126,6 +130,10 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: marche-et-ramasse/package-lock.json
+
+      - name: Initialiser le schéma de la BDD
+        run: |
+          mysql -h 127.0.0.1 -u root -proot metr_test < back_end_M-R/config/schema.sql
 
       - name: Installer les dépendances backend
         working-directory: back_end_M-R

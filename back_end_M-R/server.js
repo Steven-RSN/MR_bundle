@@ -19,6 +19,11 @@ const dechetsRoutes = require('./routes/dechets');
 const usersRoutes = require('./routes/users');
 console.log('Environnement actuel :', process.env.NODE_ENV);
 
+//  <-----  ! Route de santé (avant les routes paramétriques) !  ----->
+app.get('/test',(req,res)=>{
+    res.send(' Le backen est ok ! ')
+})
+
 //  <-----  Routes pour les déchets  ----->
 app.use('/',dechetsRoutes);
 app.use('/dechets', dechetsRoutes);
@@ -28,13 +33,6 @@ app.use('/uploads', express.static('uploads'));
 
 //  <-----  Routes pour les utilisateurs  ----->
 app.use('/users', usersRoutes);
-
-
-//  <-----  ! Routes Test !  ----->
-
-app.get('/test',(req,res)=>{
-    res.send(' Le backen est ok ! ')
-})
 
 app.listen(PORT,()=>{
     console.log(`Le Serveur backend lancé: ${process.env.BACK_URL}:${PORT}`)
